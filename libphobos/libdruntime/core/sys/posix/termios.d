@@ -129,7 +129,11 @@ int     tcsendbreak(int, int);
 int     tcsetattr(int, int, in termios*);
 */
 
-version( linux )
+version( Android )
+{
+    // TODO: Defined, but useful?
+}
+else version( linux )
 {
     alias ubyte cc_t;
     alias uint  speed_t;
@@ -494,7 +498,11 @@ FFDLY
 pid_t   tcgetsid(int);
 */
 
-version( linux )
+version( Android )
+{
+    // TODO: Defined, but useful?
+}
+else version( linux )
 {
     enum IXANY      = 0x0000800; // 0004000
 

@@ -22,7 +22,12 @@ extern (C):
 @system:
 nothrow:
 
-version (linux)
+version (Android)
+{
+    // XXX: Implement? It's there, but probably of minimal use.
+    int ioctl(int, int, ...);
+}
+else version (linux)
 {
     import core.sys.posix.termios; // tcflag_t, speed_t, cc_t
 

@@ -38,6 +38,14 @@ else version (Windows)
     alias core.sys.windows.windows.GetCurrentProcessId getpid;
 }
 
+version(Android)
+{
+}
+else version (GNU)
+{
+    version = HasLocalTLS;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Thread and Fiber Exceptions
@@ -244,9 +252,10 @@ else version( Posix )
         }
 
         version( GNU )
-        {
             import gcc.builtins;
 
+        version( HasLocalTLS )
+        {
             extern (C)
             {
                 extern size_t _tlsstart;
@@ -276,7 +285,7 @@ else version( Posix )
             obj.m_main.bstack = getStackBottom();
             obj.m_main.tstack = obj.m_main.bstack;
             obj.m_tlsgcdata = rt.tlsgc.init();
-            version (GNU)
+            version (HasLocalTLS)
             {
                 auto pstart = cast(void*) &_tlsstart;
                 auto pend   = cast(void*) &_tlsend;
@@ -1203,7 +1212,7 @@ private:
         m_call = Call.NO;
         m_curr = &m_main;
 
-        version (GNU)
+        version (HasLocalTLS)
         {
             auto pstart = cast(void*) &_tlsstart;
             auto pend   = cast(void*) &_tlsend;
@@ -1370,7 +1379,7 @@ private:
     Context             m_main;
     Context*            m_curr;
     bool                m_lock;
-    version (GNU)
+    version (HasLocalTLS)
     {
         void[]          m_tls;  // spans implicit thread local storage
     }
@@ -1691,6 +1700,8 @@ version (GNU)
         static assert(__traits(classInstanceSize, Thread) == 128);
     else version (OSX)
         static assert(__traits(classInstanceSize, Thread) == 128);
+    else version (Android)
+        static assert(__traits(classInstanceSize, Thread) ==  84);
     else version (Posix)
         static assert(__traits(classInstanceSize, Thread) ==  92);
     else
@@ -1890,7 +1901,7 @@ extern (C) Thread thread_attachThis()
         assert( thisThread.m_tmach != thisThread.m_tmach.init );
     }
 
-    version (GNU)
+    version (HasLocalTLS)
     {
         auto pstart = cast(void*) &_tlsstart;
         auto pend   = cast(void*) &_tlsend;
@@ -1946,7 +1957,7 @@ version( Windows )
         {
             thisThread.m_hndl = GetCurrentThreadHandle();
             thisThread.m_tlsgcdata = rt.tlsgc.init();
-            version (GNU)
+            version (HasLocalTLS)
             {
                 auto pstart = cast(void*) &_tlsstart;
                 auto pend   = cast(void*) &_tlsend;
@@ -1960,7 +1971,7 @@ version( Windows )
             impersonate_thread(addr,
             {
                 thisThread.m_tlsgcdata = rt.tlsgc.init();
-                version (GNU)
+                version (HasLocalTLS)
                 {
                     auto pstart = cast(void*) &_tlsstart;
                     auto pend   = cast(void*) &_tlsend;
@@ -2603,7 +2614,7 @@ private void scanAllTypeImpl( scope ScanAllThreadsTypeFn scan, void* curStackTop
             // would make portability annoying because it only makes sense on Windows.
             scan( ScanType.stack, t.m_reg.ptr, t.m_reg.ptr + t.m_reg.length );
         }
-        version (GNU)
+        version (HasLocalTLS)
             scan( ScanType.tls, t.m_tls.ptr, t.m_tls.ptr + t.m_tls.length );
 
         if (t.m_tlsgcdata !is null)

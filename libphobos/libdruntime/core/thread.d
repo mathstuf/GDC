@@ -3137,6 +3137,8 @@ private
             version = AsmExternal;
         }
     }
+    version = AsmARM_Posix;
+    version = AsmExternal;
 
     version( Posix )
     {
